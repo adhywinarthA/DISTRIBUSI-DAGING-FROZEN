@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Catat Daging + Stok Pro</title>
+    <style>
+        /* CSS OFFLINE MANDIRI - Menggantikan Tailwind CDN agar APK Tidak Berantakan */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background-color: #f3f4f6; 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #1f2937;
+            padding-bottom: 50px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
+        
+        /* Header */
+        .header { background: #dc2626; color: white; padding: 15px; rounded-radius: 12px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex-direction: column; display: flex; gap: 10px; }
+        .header h1 { font-size: 1.25rem; font-weight: bold; }
+        .header p { font-size: 0.75rem; color: #fee2e2; }
+        .btn-lihat { background: #b91c1c; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; align-self: flex-start; }
+
+        /* Metrik Ringkasan Atas */
+        .grid-metrik { display: grid; grid-template-cols: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        @media(min-width: 600px) { .grid-metrik { grid-template-columns: repeat(5, 1fr); } .col-span-mobile { grid-column: auto; } }
+        @media(max-width: 599px) { .col-span-mobile { grid-column: span 2; } }
+        .card-metrik { background: white; padding: 12px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-metrik p:first-child { font-size: 0.75rem; color: #6b7280; font-weight: 500; margin-bottom: 4px; }
+        .card-metrik p:last-child { font-size: 1.1rem; font-weight: bold; }
+
+        /* Blok Manajemen Data */
+        .box-putih { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .box-judul { font-size: 0.875rem; font-weight: bold; color: #374151; margin-bottom: 12px; }
+        
+        /* Form & Input */
+        .flex-btn-backup { display: flex; flex-direction: column; gap: 8px; }
+        @media(min-width: 480px) { .flex-btn-backup { flex-direction: row; } }
+        .btn { border: none; padding: 10px 15px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; text-align: center; color: white; transition: 0.2s; }
+        .btn-dark { background: #1f2937; }
+        .btn-green { background: #16a34a; }
+        .btn-red { background: #dc2626; width: 100%; }
+        .btn-gray { background: #d1d5db; color: #374151; }
+        .input-file-wrapper { border: 1px solid #d1d5db; border-radius: 8px; padding: 4px; background: #f9fafb; display: flex; align-items: center; flex: 1; }
+        .input-file-wrapper input { font-size: 0.75rem; width: 100%; color: #6b7280; }
+        
+        .form-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+        .form-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 0.75rem; font-weight: 600; color: #4b5563; margin-bottom: 4px; }
+        .form-group input, .form-group textarea { border: 1px solid #d1d5db; padding: 8px; border-radius: 8px; font-size: 0.875rem; outline: none; width: 100%; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #dc2626; box-shadow: 0 0 0 2px rgba(220,38,38,0.1); }
+
+        /* Layout Utama Split Form & Preview */
+        .layout-split { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px; }
+        @media(min-width: 768px) { .layout-split { grid-template-columns: 2fr 1fr; } }
+        
+        /* Card Preview Hitam */
+        .card-preview { background: linear-gradient(to bottom right, #1f2937, #111827); color: white; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; }
+        .preview-item { margin-bottom: 12px; }
+        .preview-label { font-size: 0.75rem; color: #9ca3af; margin-bottom: 2px; }
+        .preview-val { font-size: 1.1rem; font-weight: bold; }
+        .preview-total-box { border-top: 1px solid #374151; padding-top: 12px; margin-top: 15px; }
+
+        /* Desain Tabel Responsif Nyaman di Android */
+        .overflow-tabel { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #e5e7eb; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.75rem; background: white; min-width: 600px; }
+        th { background: #f3f4f6; color: #4b5563; font-weight: 600; padding: 10px; border-b: 1px solid #e5e7eb; }
+        td { padding: 10px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+        tr.stok-habis { background-color: #fef2f2; color: #991b1b; }
+        
+        .badge { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-blue { color: #2563eb; }
+        .text-orange { color: #ea580c; }
+        .text-purple { color: #9333ea; }
+        .text-green { color: #16a34a; }
+        .text-red { color: #dc2626; }
+        
+        .input-cari { border: 1px solid #d1d5db; padding: 8px; border-radius: 8px; font-size: 0.75rem; width: 100%; max-width: 250px; outline: none; margin-bottom: 10px; }
+        .header-riwayat { display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
+        @media(min-width: 480px) { .header-riwayat { flex-direction: row; align-items: center; } .input-cari { margin-bottom: 0; } }
+        
+        .btn-aksi { background: none; border: none; font-weight: bold; cursor: pointer; padding: 2px 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- HEADER APLIKASI -->
+        <div class="header">
+            <div>
+                <h1>🥩 Catat Daging & Stok Pro</h1>
+                <p>Pencatatan Penjualan & Kontrol Stok Offline Mandiri</p>
+            </div>
+            <button onclick="document.getElementById('section-riwayat').scrollIntoView({behavior: 'smooth'})" class="btn-lihat">📋 Lihat Riwayat</button>
+        </div>
+
+        <!-- RINGKASAN ATAS -->
+        <div class="grid-metrik">
+            <div class="card-metrik"><p>Transaksi</p><p id="summary-transaksi">0</p></div>
+            <div class="card-metrik"><p>Total Jual</p><p id="summary-jual" class="text-blue">Rp 0</p></div>
+            <div class="card-metrik"><p>Total Modal</p><p id="summary-modal" class="text-orange">Rp 0</p></div>
+            <div class="card-metrik"><p>Total Ongkir</p><p id="summary-ongkir" class="text-purple">Rp 0</p></div>
+            <div class="card-metrik col-span-mobile"><p>Untung Bersih</p><p id="summary-untung" class="text-green">Rp 0</p></div>
+        </div>
+
+        <!-- MONITOR STOK KATEGORI -->
+        <div class="layout-split">
+            <div class="box-putih">
+                <div class="box-judul">📦 Atur Kontrol Stok Awal</div>
+                <form id="form-stok" onsubmit="simpanStok(event)" class="form-grid-2">
+                    <div class="form-group">
+                        <label>Kategori / Jenis Daging</label>
+                        <input type="text" id="stok-jenis" required placeholder="Contoh: Sapi Sirloin">
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah Stok Awal (kg)</label>
+                        <input type="number" step="0.01" id="stok-awal" required placeholder="0.00">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <button type="submit" class="btn btn-dark" style="width:100%; padding: 8px;">➕ Set / Perbarui Stok</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="box-putih" style="margin-bottom:15px; overflow-y:auto; max-height:165px;">
+                <div class="box-judul">📊 Status Sisa Daging</div>
+                <div class="overflow-tabel" style="border:none;">
+                    <table style="min-width:100%;">
+                        <thead>
+                            <tr style="font-size:11px;">
+                                <th>Jenis</th>
+                                <th class="text-right">Awal</th>
+                                <th class="text-right text-blue">Laku</th>
+                                <th class="text-right text-green">Sisa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-stok-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORM INPUT PENJUALAN & PRATINJAU -->
+        <div class="layout-split">
+            <div id="section-form" class="box-putih">
+                <div id="form-title" class="box-judul" style="font-size:1rem;">📝 Tambah Transaksi Baru</div>
+                <form id="form-transaksi" onsubmit="simpanTransaksi(event)">
+                    <input type="hidden" id="edit-id">
+                    
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Tanggal</label>
+                            <input type="date" id="input-tanggal" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Daging</label>
